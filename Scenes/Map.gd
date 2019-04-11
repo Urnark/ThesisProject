@@ -29,11 +29,9 @@ class Map:
 	var tiles = []
 	var tile_map
 	
-	func _init(var width: int, var height: int):
+	func _init(var width: int, var height: int, var tile_map: TileMap):
 		self.width = width
 		self.height = height
-	
-	func set_tile_map(var tile_map: TileMap):
 		self.tile_map = tile_map
 	
 	func set_tiles(var tiles: Array):
@@ -51,12 +49,13 @@ class Map:
 		update_tile_map()
 
 var zoom : Vector2 = Vector2(1, 1)
-var map: Map = Map.new(WIDTH, HEIGHT)
+var map : Map
 
 func _ready():
 	# Randomize the seed to creating random maps
 	randomize()
 	
+	map = Map.new(WIDTH, HEIGHT, $TileMap)
 	_p_generateTileMap(map)
 	map.update_tile_map()
 
@@ -68,7 +67,6 @@ func _p_generateTileMap(var map: Map):
 			tiles.append(Tile.new(_p_get_tile_index(), Vector2(x, y)))
 	
 	map.set_tiles(tiles)
-	map.set_tile_map($TileMap)
 
 func _p_get_tile_index() -> int:
 	#return randi() % TILES.size()
@@ -90,13 +88,13 @@ func _process(delta):
 	var pos : Vector2 = $Camera2D.position
 	var speed := 10 * zoom.length()
 	
-	if Input.is_key_pressed(KEY_LEFT):
+	if Input.is_action_pressed('ui_left'):
 		pos.x -= speed
-	if Input.is_key_pressed(KEY_RIGHT):
+	if Input.is_action_pressed('ui_right'):
 		pos.x += speed
-	if Input.is_key_pressed(KEY_UP):
+	if Input.is_action_pressed('ui_up'):
 		pos.y -= speed
-	if Input.is_key_pressed(KEY_DOWN):
+	if Input.is_action_pressed('ui_down'):
 		pos.y += speed
-		
+	
 	$Camera2D.position = pos
