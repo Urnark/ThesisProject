@@ -57,6 +57,7 @@ func _ready():
 	
 	map = Map.new(WIDTH, HEIGHT, $TileMap)
 	_p_generateTileMap(map)
+	#map.set_wireframe()
 	map.update_tile_map()
 
 # Make a tiles for the choosen map
