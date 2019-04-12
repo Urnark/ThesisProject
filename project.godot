@@ -16,8 +16,12 @@ _global_script_class_icons={
 [application]
 
 config/name="ThesisProject"
-run/main_scene="res://Scenes/Map.tscn"
+run/main_scene="res://Scenes/Maps/MapHandler.tscn"
 config/icon="res://icon.png"
+
+[autoload]
+
+Global="*res://Scripts/Global.gd"
 
 [display]
 
