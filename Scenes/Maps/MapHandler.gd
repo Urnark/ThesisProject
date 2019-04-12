@@ -4,16 +4,21 @@ const WIDTH := 500
 const HEIGHT := 500
 
 const MapGD = preload('Map.gd')
+var map : MapGD.Map
 
 var zoom : Vector2 = Vector2(1, 1)
-var map : MapGD.Map
 
 func _ready():
 	# Randomize the seed to creating random maps
 	randomize()
+
+func generate_new_map(path_to_png_file: String):
+	# Clear the tile map
+	$TileMap.clear()
 	
+	# Create new map
 	map = MapGD.Map.new(WIDTH, HEIGHT, $TileMap)
-	map.load_map('res://Img/Maps/map0.png')
+	map.load_map(path_to_png_file)
 	#_p_generate_tile_map_with_noise(map)
 	#map.set_wireframe()
 	map.update_tile_map()
