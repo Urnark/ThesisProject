@@ -13,7 +13,8 @@ func _ready():
 	randomize()
 	
 	map = MapGD.Map.new(WIDTH, HEIGHT, $TileMap)
-	_p_generate_tile_map_with_noise(map)
+	map.load_map('res://Img/Maps/map0.png')
+	#_p_generate_tile_map_with_noise(map)
 	#map.set_wireframe()
 	map.update_tile_map()
 

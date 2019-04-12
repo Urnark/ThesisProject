@@ -35,3 +35,23 @@ class Map:
 			if tile.tile_index == Global.TILES.cell:
 				tile.tile_index = Global.TILES.grid_cell
 		update_tile_map()
+	
+	func load_map(path: String):
+		# Load map image from .png file
+		var image = Image.new()
+		image.load(path)
+		# Get width and height of the image
+		self.width = image.get_width()
+		self.height = image.get_height()
+		
+		image.lock()
+		
+		# Fill the tiles list
+		self.tiles.clear()
+		for x in self.width:
+			for y in self.height:
+				var wall = true if image.get_pixel(x, y).r == 0 else false
+				var tile_index = Global.TILES.wall if wall else Global.TILES.cell
+				self.tiles.append(Tile.new(tile_index, Vector2(x, y)))
+		
+		image.unlock()
