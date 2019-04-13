@@ -12,13 +12,22 @@ func _ready():
 	# Randomize the seed to creating random maps
 	randomize()
 
-func generate_new_map(path_to_png_file: String):
+func generate_new_map_from_image(image_of_map: Image):
 	# Clear the tile map
 	$TileMap.clear()
 	
 	# Create new map
-	map = MapGD.Map.new(WIDTH, HEIGHT, $TileMap)
-	map.load_map(path_to_png_file)
+	map = MapGD.Map.new($TileMap)
+	map.use_image_for_map(image_of_map)
+	map.update_tile_map()
+
+func generate_new_map(path_to_file: String):
+	# Clear the tile map
+	$TileMap.clear()
+	
+	# Create new map
+	map = MapGD.Map.new($TileMap)
+	map.load_map(path_to_file)
 	#_p_generate_tile_map_with_noise(map)
 	#map.set_wireframe()
 	map.update_tile_map()

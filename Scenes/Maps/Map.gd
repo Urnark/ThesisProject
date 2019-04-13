@@ -17,13 +17,8 @@ class Map:
 	var tiles = []
 	var tile_map
 	
-	func _init(var width: int, var height: int, var tile_map: TileMap):
-		self.width = width
-		self.height = height
+	func _init(tile_map: TileMap):
 		self.tile_map = tile_map
-	
-	func set_tiles(var tiles: Array):
-		self.tiles = tiles
 	
 	func update_tile_map():
 		for x in self.width:
@@ -36,10 +31,7 @@ class Map:
 				tile.tile_index = Global.TILES.grid_cell
 		update_tile_map()
 	
-	func load_map(path: String):
-		# Load map image from .png file
-		var image = Image.new()
-		image.load(path)
+	func use_image_for_map(image: Image):
 		# Get width and height of the image
 		self.width = image.get_width()
 		self.height = image.get_height()
@@ -55,3 +47,10 @@ class Map:
 				self.tiles.append(Tile.new(tile_index, Vector2(x, y)))
 		
 		image.unlock()
+	
+	func load_map(path: String):
+		# Load map image from .png file
+		var image = Image.new()
+		image.load(path)
+		
+		self.use_image_for_map(image)
