@@ -1,38 +1,137 @@
 extends Node2D
 
-onready var file_names = get_png_file_names_in_directory(PATH_TO_DIRECTORY)
-
-export(String) var PATH_TO_DIRECTORY = 'res://Img/Maps'
 export(Array, Image) var image_maps
 
-func _ready():
-#	print(file_names)
-#
-#	var id = 0
-#	for file_name in file_names:
-#		$CanvasLayer/UI/OptionButton.add_item(file_name, id)
-#		id += 1
-#	$MapHandler.generate_new_map(PATH_TO_DIRECTORY + '/' + file_names[0])
-	
-	for image_index in image_maps.size():
-		$CanvasLayer/UI/OptionButton.add_item('map[' + str(image_index) + ']', image_index)
-	$MapHandler.generate_new_map_from_image(image_maps[0])
+enum MAP_TYPE { IMAGE = 0, NOISE, RANDOM_NR }
 
-# If all the files in the directory is used
-func get_png_file_names_in_directory(path: String) -> Array:
-	var file_names = []
-	var dir = Directory.new()
-	if dir.open(path) == OK:
-		dir.list_dir_begin()
-		var file_name = dir.get_next()
-		while (file_name != ""):
-			if not dir.current_is_dir() and file_name.ends_with('.png'):
-				file_names.append(file_name)
-			file_name = dir.get_next()
-	else:
-		print("An error occurred when trying to access the path")
+var data: Dictionary = {}
+
+var popup = []
+
+var current_free_id = 0
+
+func _ready():
+	data = SaveLoad.load_maps()
+	for map in data['maps']:
+		$CanvasLayer/UI/OptionButton.add_item(map['name'], current_free_id)
+		current_free_id += 1
 	
-	return file_names
+	generate_map(data['maps'][0])
+
+func _exit_tree():
+	SaveLoad.save_maps(data)
+
+func _process(delta):
+	var new = false
+	if not popup.empty():
+		if popup[0] == 'img':
+			if popup[1].has_changed:
+				popup[1].has_changed = false
+				data['maps'].append(
+				{
+					"img": "res://Img/Maps/" + popup[1].name_for_map,
+					"name": "[img]" + popup[1].name_for_map,
+					"type": 0
+				})
+				new = true
+		
+		if popup[0] == 'noise':
+			if popup[1].has_changed:
+				popup[1].has_changed = false
+				data['maps'].append(
+				{
+					"height": popup[1].height,
+					"name": "[noise]" + popup[1].map_name,
+					"octaves": popup[1].octaves,
+					"period": popup[1].period,
+					"persistence": popup[1].persistence,
+					"seed": popup[1].seed_nr,
+					"type": 1,
+					"width": popup[1].width
+				})
+				new = true
+		
+		if popup[0] == 'random':
+			if popup[1].has_changed:
+				popup[1].has_changed = false
+				data['maps'].append(
+				{
+					"height": popup[1].height,
+					"name": "[random]" + popup[1].name_of_map,
+					"seed": popup[1].seed_nr,
+					"type": 2,
+					"width": popup[1].width
+				})
+				new = true
+	
+	if new == true:
+		$CanvasLayer/UI/OptionButton.add_item(data['maps'][data['maps'].size() - 1]['name'], current_free_id)
+		current_free_id += 1
+		popup[1].free()
+		popup = []
 
 func _on_OptionButton_item_selected(ID):
-	$MapHandler.generate_new_map_from_image(image_maps[ID])
+	generate_map(data['maps'][ID])
+	$CanvasLayer/Panel/MarginContainer/Info.text = str(data['maps'][ID])
+
+func generate_map(map_data):
+	var x : int = map_data['type']
+	match x:
+		0:#MAP_TYPE.IMAGE:
+			$MapHandler.generate_new_map(map_data['img'])
+		
+		1:#MAP_TYPE.NOISE:
+			map_data['seed'] = $MapHandler.generate_new_map_with_noise(map_data['width'], map_data['height'], map_data['seed'], 
+			map_data['octaves'], map_data['period'], map_data['persistence'])
+		
+		2:#MAP_TYPE.RANDOM_NR:
+			map_data['seed'] = $MapHandler.generate_new_map_with_random_numbers(map_data['width'], map_data['height'], map_data['seed'])
+
+func _on_NewMapImageButton_pressed():
+	var isit = true
+	if not popup.empty() and popup[0] == 'img':
+		isit = false
+	
+	if not popup.empty():
+		popup[1].free()
+		popup = []
+	
+	if isit == true:
+		var new_map_image = load('res://Scenes/Popups/NewMapImage.tscn').instance()
+		$CanvasLayer.add_child(new_map_image)
+		popup = ['img', new_map_image]
+
+func _on_NewMapNoiseButton_pressed():
+	var isit = true
+	if not popup.empty() and popup[0] == 'noise':
+		isit = false
+	
+	if not popup.empty():
+		popup[1].free()
+		popup = []
+	
+	if isit == true:
+		var new_map_image = load('res://Scenes/Popups/NewMapNoise.tscn').instance()
+		$CanvasLayer.add_child(new_map_image)
+		popup = ['noise', new_map_image]
+
+func _on_NewMapRandomButton_pressed():
+	var isit = true
+	if not popup.empty() and popup[0] == 'random':
+		isit = false
+	
+	if not popup.empty():
+		popup[1].free()
+		popup = []
+	
+	if isit == true:
+		var new_map_image = load('res://Scenes/Popups/NewMapRandom.tscn').instance()
+		$CanvasLayer.add_child(new_map_image)
+		popup = ['random', new_map_image]
+
+func _on_Button_pressed():
+	if data['maps'].size() > 1:
+		var index = $CanvasLayer/UI/OptionButton.get_selected_id()
+		data['maps'].erase(data['maps'][index])
+		$CanvasLayer/UI/OptionButton.remove_item(index)
+		$CanvasLayer/UI/OptionButton.select((index - 1) if index - 1 >= 0 else 0)

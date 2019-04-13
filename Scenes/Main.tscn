@@ -13,12 +13,79 @@ image_maps = [ ExtResource( 2 ), ExtResource( 3 ) ]
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="UI" type="MarginContainer" parent="CanvasLayer"]
-margin_right = 41.0
-margin_bottom = 40.0
+[node name="Button" type="Button" parent="CanvasLayer"]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -86.0
+margin_top = -20.0
+focus_mode = 0
+enabled_focus_mode = 0
+text = "Delete Map"
+
+[node name="UI" type="VBoxContainer" parent="CanvasLayer"]
+margin_right = 70.0
+margin_bottom = 24.0
 
 [node name="OptionButton" type="OptionButton" parent="CanvasLayer/UI"]
-margin_right = 41.0
-margin_bottom = 40.0
+margin_right = 70.0
+margin_bottom = 20.0
+focus_mode = 0
+enabled_focus_mode = 0
 
+[node name="Buttons" type="VBoxContainer" parent="CanvasLayer"]
+anchor_left = 1.0
+anchor_right = 1.0
+margin_left = -192.0
+margin_bottom = 68.0
+
+[node name="NewMapImageButton" type="Button" parent="CanvasLayer/Buttons"]
+margin_right = 192.0
+margin_bottom = 20.0
+focus_mode = 0
+enabled_focus_mode = 0
+text = "Create new Map from Image"
+
+[node name="NewMapNoiseButton" type="Button" parent="CanvasLayer/Buttons"]
+margin_top = 24.0
+margin_right = 192.0
+margin_bottom = 44.0
+focus_mode = 0
+enabled_focus_mode = 0
+text = "Create new Map from Noise"
+
+[node name="NewMapRandomButton" type="Button" parent="CanvasLayer/Buttons"]
+margin_top = 48.0
+margin_right = 192.0
+margin_bottom = 68.0
+focus_mode = 0
+enabled_focus_mode = 0
+text = "Create new random Map"
+
+[node name="Panel" type="Panel" parent="CanvasLayer"]
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_top = -90.0
+margin_right = -762.0
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Panel"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+custom_constants/margin_right = 4
+custom_constants/margin_top = 4
+custom_constants/margin_left = 4
+custom_constants/margin_bottom = 4
+
+[node name="Info" type="RichTextLabel" parent="CanvasLayer/Panel/MarginContainer"]
+margin_left = 4.0
+margin_top = 4.0
+margin_right = 258.0
+margin_bottom = 86.0
+
+[connection signal="pressed" from="CanvasLayer/Button" to="." method="_on_Button_pressed"]
 [connection signal="item_selected" from="CanvasLayer/UI/OptionButton" to="." method="_on_OptionButton_item_selected"]
+[connection signal="pressed" from="CanvasLayer/Buttons/NewMapImageButton" to="." method="_on_NewMapImageButton_pressed"]
+[connection signal="pressed" from="CanvasLayer/Buttons/NewMapNoiseButton" to="." method="_on_NewMapNoiseButton_pressed"]
+[connection signal="pressed" from="CanvasLayer/Buttons/NewMapRandomButton" to="." method="_on_NewMapRandomButton_pressed"]
