@@ -67,7 +67,7 @@ text = "Create new random Map"
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_top = -90.0
+margin_top = -140.0
 margin_right = -762.0
 
 [node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Panel"]
@@ -82,7 +82,7 @@ custom_constants/margin_bottom = 4
 margin_left = 4.0
 margin_top = 4.0
 margin_right = 258.0
-margin_bottom = 86.0
+margin_bottom = 136.0
 
 [connection signal="pressed" from="CanvasLayer/Button" to="." method="_on_Button_pressed"]
 [connection signal="item_selected" from="CanvasLayer/UI/OptionButton" to="." method="_on_OptionButton_item_selected"]

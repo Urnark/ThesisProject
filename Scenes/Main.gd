@@ -17,6 +17,7 @@ func _ready():
 		current_free_id += 1
 	
 	generate_map(data['maps'][0])
+	set_information(0)
 
 func _exit_tree():
 	SaveLoad.save_maps(data)
@@ -70,9 +71,17 @@ func _process(delta):
 		popup[1].free()
 		popup = []
 
+func set_information(id: int):
+	var text = ''
+	#text += 'Width: ' + data['maps'][id]['width'] + '\n'
+	#text += 'Height:' + data['maps'][id]['height'] + '\n'
+	for key in data['maps'][id].keys():
+		text += str(key) + ': ' + str(data['maps'][id][key]) + '\n'
+	$CanvasLayer/Panel/MarginContainer/Info.text = text
+
 func _on_OptionButton_item_selected(ID):
 	generate_map(data['maps'][ID])
-	$CanvasLayer/Panel/MarginContainer/Info.text = str(data['maps'][ID])
+	set_information(ID)
 
 func generate_map(map_data):
 	var x : int = map_data['type']

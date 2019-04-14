@@ -91,14 +91,125 @@ func _p_generate_tile_map_with_noise(seed_nr: int, map: MapGD.Map, octaves: int 
 	
 	noise_image.unlock()
 	
-	for y in map.height / noise.period:
-		for x in map.width:
-			var yy = y * noise.period
-			tiles[x + yy * map.width].tile_index = Global.TILES.cell
-	for x in map.width:
-		tiles[x + (map.height - 1) * map.width].tile_index = Global.TILES.cell
-	
 	map.tiles = tiles
+	
+	var mg = _p_find_groups(map)
+	var groups = mg[1]
+	for group in groups:
+		for tile in group:
+			tile.tile_index = Global.TILES.goal_point
+	
+	_p_generate_roads_from_groups(map, mg[0], mg[1])
+
+func _p_generate_roads_from_groups(map: MapGD.Map, group_list: Array, groups: Array):
+	# Find biggest group as the main group
+	var biggest_group = groups[0]
+	var biggest_group_index = 0
+	var index = 0
+	for group in groups:
+		if group.size() > biggest_group.size():
+			biggest_group = group
+			biggest_group_index = index
+		index += 1
+	
+	# Make roads to the main group
+	var tile_index_for_cell = groups[0][0].tile_index
+	for group_index in groups.size():
+		if biggest_group_index != group_index:
+			var x = groups[group_index][0].pos.x
+			var y = groups[group_index][0].pos.y
+			var goal_x = biggest_group[0].pos.x
+			var goal_y = biggest_group[0].pos.y
+			# Make the road in the x-axis
+			var road_done = false
+			while not road_done:
+				if goal_x < x:
+					x -= 1
+				else:
+					x += 1
+				if group_list[x + (y * map.width)] != group_index and group_list[x + (y * map.width)] != -1:
+					road_done = true
+				elif group_list[x + (y * map.width)] == -1:
+					group_list[x + (y * map.width)] = group_index
+					map.tiles[x + (y * map.width)].tile_index = tile_index_for_cell
+				if goal_x == x:
+					road_done = true
+			# Make the road in the y-axis
+			road_done = false
+			while not road_done:
+				if goal_y < y:
+					y -= 1
+				else:
+					y += 1
+				if group_list[x + (y * map.width)] != group_index and group_list[x + (y * map.width)] != -1:
+					road_done = true
+				elif group_list[x + (y * map.width)] == -1:
+					group_list[x + (y * map.width)] = group_index
+					map.tiles[x + (y * map.width)].tile_index = tile_index_for_cell
+				if goal_y == y:
+					road_done = true
+
+# Function that returns an array of all the groups in the map and 
+# a list of all the cells and which group they belong to.
+# With a max number of groups as 10000
+func _p_find_groups(map: MapGD.Map) -> Array:
+	# Get start pos for iteration
+	var current_x = 0
+	var current_y = 0
+	for tile in map.tiles:
+		if tile.tile_index != Global.TILES.wall:
+			current_x = tile.pos.x
+			current_y = tile.pos.y
+			break
+	
+	var group_list = []
+	for tile in map.tiles:
+		group_list.append(-1)
+	
+	var current_group = 0
+	var groups = []
+	groups.append([])
+	var open_list = []
+	open_list.append([current_x, current_y])
+	var all_searched = false
+	var MAX_GROUPS = 10000
+	var groups_found = MAX_GROUPS
+	while not all_searched:
+		
+		# Iterate over whole group
+		while not open_list.empty():
+			current_x = open_list[0][0]
+			current_y = open_list[0][1]
+			open_list.pop_front()
+			group_list[current_x + (current_y * map.width)] = current_group
+			groups[current_group].append(map.tiles[current_x + (current_y * map.width)])
+			
+			for x in [-1, 0, 1]:
+				for y in [-1, 0, 1]:
+					if not (x == 0 and y == 0):
+						var index = (current_x + x) + ((current_y + y) * map.width)
+						if (current_x + x) >= 0 and (current_x + x) < map.width and (current_y + y) >= 0 and (current_y + y) < map.height:
+							if map.tiles[index].tile_index != Global.TILES.wall:
+								if group_list[index] == -1:
+									group_list[index] = current_group
+									open_list.append([current_x + x, current_y + y])
+									groups[current_group].append(map.tiles[index])
+		
+		# Find new group
+		for index in map.tiles.size():
+			if map.tiles[index].tile_index != Global.TILES.wall:
+				if group_list[index] == -1:
+					current_group += 1
+					groups.append([])
+					open_list.append([map.tiles[index].pos.x, map.tiles[index].pos.y])
+					break
+		
+		# Check if all the cells has been searched
+		if open_list.empty() or groups_found == 0:
+			all_searched = true
+		groups_found -= 1
+	
+	return [group_list, groups]
 
 # Generating tiles to the choosen map with only random numbers
 func _p_generate_tile_map_with_ranom_numbers(var map: MapGD.Map):
