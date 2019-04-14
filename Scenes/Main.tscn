@@ -63,6 +63,14 @@ focus_mode = 0
 enabled_focus_mode = 0
 text = "Create new random Map"
 
+[node name="SaveAsImageButton" type="Button" parent="CanvasLayer/Buttons"]
+margin_top = 72.0
+margin_right = 192.0
+margin_bottom = 92.0
+focus_mode = 0
+enabled_focus_mode = 0
+text = "Save as PNG image"
+
 [node name="Panel" type="Panel" parent="CanvasLayer"]
 anchor_top = 1.0
 anchor_right = 1.0
@@ -89,3 +97,4 @@ margin_bottom = 136.0
 [connection signal="pressed" from="CanvasLayer/Buttons/NewMapImageButton" to="." method="_on_NewMapImageButton_pressed"]
 [connection signal="pressed" from="CanvasLayer/Buttons/NewMapNoiseButton" to="." method="_on_NewMapNoiseButton_pressed"]
 [connection signal="pressed" from="CanvasLayer/Buttons/NewMapRandomButton" to="." method="_on_NewMapRandomButton_pressed"]
+[connection signal="pressed" from="CanvasLayer/Buttons/SaveAsImageButton" to="." method="_on_SaveAsImageButton_pressed"]

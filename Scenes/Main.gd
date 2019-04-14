@@ -88,6 +88,8 @@ func generate_map(map_data):
 	match x:
 		0:#MAP_TYPE.IMAGE:
 			$MapHandler.generate_new_map(map_data['img'])
+			map_data['width'] = $MapHandler.map.width
+			map_data['height'] = $MapHandler.map.height
 		
 		1:#MAP_TYPE.NOISE:
 			map_data['seed'] = $MapHandler.generate_new_map_with_noise(map_data['width'], map_data['height'], map_data['seed'], 
@@ -144,3 +146,27 @@ func _on_Button_pressed():
 		data['maps'].erase(data['maps'][index])
 		$CanvasLayer/UI/OptionButton.remove_item(index)
 		$CanvasLayer/UI/OptionButton.select((index - 1) if index - 1 >= 0 else 0)
+
+func _on_SaveAsImageButton_pressed():
+	var map = data['maps'][$CanvasLayer/UI/OptionButton.get_selected_id()]
+	if not map.has('img'):
+		# Create .png image from current map
+		var img = Image.new()
+		img.create(map.width, map.height, false, Image.FORMAT_RGBA8)
+		img.lock()
+		for tile in $MapHandler.map.tiles:
+			img.set_pixelv(tile.pos, Color(0, 0, 0, 1) if tile.tile_index == Global.TILES.wall else Color(1, 1, 1, 1))
+		img.unlock()
+		print('filled new image with pixels')
+		var name = map['name'].split(']')[1]
+		img.save_png('res://Img/Maps/' + name + '.png')
+		
+		# Add to the list of maps
+		data['maps'].append(
+		{
+			"img": "res://Img/Maps/" + name + '.png',
+			"name": "[img]" + name,
+			"type": 0
+		})
+		$CanvasLayer/UI/OptionButton.add_item(data['maps'][data['maps'].size() - 1]['name'], current_free_id)
+		current_free_id += 1
