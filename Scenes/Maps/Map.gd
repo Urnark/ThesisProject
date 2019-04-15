@@ -3,6 +3,11 @@ extends Node
 class Tile:
 	var tile_index = Global.TILES.cell
 	var pos := Vector2(0, 0)
+	var f : float = 0.0
+	var h : float = 0.0
+	var g : float = 0.0
+	var visited := false
+	var parent = null
 	
 	func _init(var tile_index: int, var pos: Vector2):
 		self.tile_index = tile_index
@@ -19,6 +24,12 @@ class Map:
 	
 	func _init(tile_map: TileMap):
 		self.tile_map = tile_map
+	
+	func tile(x: int, y: int) -> Tile:
+		return self.tiles[x + y * self.width]
+		
+	func tilev(pos: Vector2) -> Tile:
+		return self.tiles[pos.x + pos.y * self.width]
 	
 	func update_tile_map():
 		for x in self.width:
@@ -40,8 +51,8 @@ class Map:
 		
 		# Fill the tiles list
 		self.tiles.clear()
-		for x in self.width:
-			for y in self.height:
+		for y in self.height:
+			for x in self.width:
 				var wall = true if image.get_pixel(x, y).r == 0 else false
 				var tile_index = Global.TILES.wall if wall else Global.TILES.cell
 				self.tiles.append(Tile.new(tile_index, Vector2(x, y)))

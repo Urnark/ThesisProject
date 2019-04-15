@@ -1,7 +1,5 @@
 extends Node2D
 
-export(Array, Image) var image_maps
-
 enum MAP_TYPE { IMAGE = 0, NOISE, RANDOM_NR }
 
 var data: Dictionary = {}
@@ -11,6 +9,7 @@ var popup = []
 var current_free_id = 0
 
 func _ready():
+	$MapHandler/Camera2D/FullScreenButton.connect('pressed', self, '_on_full_screen_button_pressed')
 	data = SaveLoad.load_maps()
 	_p_createOptions()
 	
@@ -24,6 +23,7 @@ func _p_createOptions():
 		current_free_id += 1
 
 func _exit_tree():
+	$MapHandler/Camera2D/FullScreenButton.disconnect('pressed', self, '_on_full_screen_button_pressed')
 	SaveLoad.save_maps(data)
 
 func _process(delta):
@@ -77,8 +77,6 @@ func _process(delta):
 
 func set_information(id: int):
 	var text = ''
-	#text += 'Width: ' + data['maps'][id]['width'] + '\n'
-	#text += 'Height:' + data['maps'][id]['height'] + '\n'
 	for key in data['maps'][id].keys():
 		text += str(key) + ': ' + str(data['maps'][id][key]) + '\n'
 	$CanvasLayer/Panel/MarginContainer/Info.text = text
@@ -175,3 +173,77 @@ func _on_SaveAsImageButton_pressed():
 		})
 		$CanvasLayer/UI/OptionButton.add_item(data['maps'][data['maps'].size() - 1]['name'], current_free_id)
 		current_free_id += 1
+
+# ------------------------------------ Choose Algorithm ---------------------------------------------
+var AStar_script = preload('../Scripts/Algorithms/MyAStar.gd')
+
+var current_algorithm_script = AStar_script
+var selected_type_to_place = -1
+
+var start_pos := Vector2(0, 0)
+var end_pos := Vector2(0, 0)
+
+func _p_get_tile_pos_from_mouse() -> Vector2:
+	var mouse_pos = get_viewport().get_mouse_position()
+	var world_pos = (mouse_pos - get_viewport_rect().size/2) * $MapHandler.zoom + $MapHandler/Camera2D.position
+	return $MapHandler/TileMap.world_to_map(world_pos)
+
+func _p_set_empty_tile(tile_pos: Vector2):
+	if tile_pos.x >= 0 and tile_pos.x < $MapHandler.map.width and tile_pos.y >= 0 and tile_pos.y < $MapHandler.map.height:
+		if selected_type_to_place != -1 and $MapHandler.map.tiles[tile_pos.x + (tile_pos.y * $MapHandler.map.width)].tile_index != Global.TILES.wall:
+			$MapHandler.map.tiles[tile_pos.x + tile_pos.y * $MapHandler.map.width].tile_index = Global.TILES.cell
+			$MapHandler.map.update_tile_map()
+
+func _on_full_screen_button_pressed():
+	if Input.is_action_just_pressed("mouse_left"):
+		if selected_type_to_place == Global.TILES.start:
+			_p_set_empty_tile(start_pos)
+			start_pos = _p_get_tile_pos_from_mouse()
+		if selected_type_to_place == Global.TILES.end:
+			_p_set_empty_tile(end_pos)
+			end_pos = _p_get_tile_pos_from_mouse()
+		var tile_pos = _p_get_tile_pos_from_mouse()
+		if tile_pos.x >= 0 and tile_pos.x < $MapHandler.map.width and tile_pos.y >= 0 and tile_pos.y < $MapHandler.map.height:
+			if selected_type_to_place != -1:
+				$MapHandler.map.tiles[tile_pos.x + (tile_pos.y * $MapHandler.map.width)].tile_index = selected_type_to_place
+				$MapHandler.map.update_tile_map()
+	
+	if Input.is_action_just_pressed("mouse_right"):
+		var tile_pos = _p_get_tile_pos_from_mouse()
+		_p_set_empty_tile(tile_pos)
+
+func _on_StartButton_pressed():
+	var algorithm = current_algorithm_script.new()
+	var path = algorithm.calculatePath($MapHandler.map, start_pos, end_pos)
+	algorithm.free()
+	
+	for pos in path:
+		$MapHandler.map.tiles[pos.x + pos.y * $MapHandler.map.width].tile_index = Global.TILES.red
+	$MapHandler.map.update_tile_map()
+
+func _on_Algorithms_item_selected(ID):
+	match ID:
+		# A*
+		0:
+			current_algorithm_script = AStar_script
+#		# AS
+#		1:
+#
+#		# DNN
+#		2:
+#
+#		# GS
+#		3:
+#
+#		# NN
+#		4:
+#
+
+func _on_SetStartButton_pressed():
+	selected_type_to_place = Global.TILES.start
+
+func _on_SetEndButton_pressed():
+	selected_type_to_place = Global.TILES.end
+
+func _on_SetGoalPointButton_pressed():
+	selected_type_to_place = Global.TILES.goal_point

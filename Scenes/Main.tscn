@@ -1,15 +1,12 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://Scenes/Main.gd" type="Script" id=1]
-[ext_resource path="res://Img/Maps/map0.png" type="Image" id=2]
-[ext_resource path="res://Img/Maps/map1.png" type="Image" id=3]
-[ext_resource path="res://Scenes/Maps/MapHandler.tscn" type="PackedScene" id=4]
+[ext_resource path="res://Scenes/Maps/MapHandler.tscn" type="PackedScene" id=2]
 
 [node name="Main" type="Node2D"]
 script = ExtResource( 1 )
-image_maps = [ ExtResource( 2 ), ExtResource( 3 ) ]
 
-[node name="MapHandler" parent="." instance=ExtResource( 4 )]
+[node name="MapHandler" parent="." instance=ExtResource( 2 )]
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
@@ -92,9 +89,62 @@ margin_top = 4.0
 margin_right = 258.0
 margin_bottom = 136.0
 
+[node name="PathfindingBox" type="HBoxContainer" parent="CanvasLayer"]
+anchor_left = 0.5
+anchor_right = 0.5
+margin_left = -269.0
+margin_right = 269.0
+margin_bottom = 20.0
+
+[node name="StartButton" type="Button" parent="CanvasLayer/PathfindingBox"]
+margin_right = 41.0
+margin_bottom = 20.0
+focus_mode = 0
+enabled_focus_mode = 0
+text = "Start"
+
+[node name="Algorithms" type="OptionButton" parent="CanvasLayer/PathfindingBox"]
+margin_left = 45.0
+margin_right = 103.0
+margin_bottom = 20.0
+focus_mode = 0
+enabled_focus_mode = 0
+text = "A*"
+items = [ "A*", null, false, 0, null, "[AS] A* Search", null, false, 1, null, "[DNN] Dynamic Nearest Neighbor", null, false, 2, null, "[GS] Greedy Search", null, false, 3, null, "[NN] Nearest Neighbor", null, false, 4, null ]
+selected = 0
+
+[node name="SetStartButton" type="Button" parent="CanvasLayer/PathfindingBox"]
+margin_left = 107.0
+margin_right = 172.0
+margin_bottom = 20.0
+focus_mode = 1
+enabled_focus_mode = 1
+text = "Set Start"
+
+[node name="SetEndButton" type="Button" parent="CanvasLayer/PathfindingBox"]
+margin_left = 176.0
+margin_right = 235.0
+margin_bottom = 20.0
+focus_mode = 1
+enabled_focus_mode = 1
+text = "Set End"
+
+[node name="SetGoalPointButton" type="Button" parent="CanvasLayer/PathfindingBox"]
+margin_left = 239.0
+margin_right = 341.0
+margin_bottom = 20.0
+focus_mode = 1
+enabled_focus_mode = 1
+text = "Set Goal Point"
+
 [connection signal="pressed" from="CanvasLayer/Button" to="." method="_on_Button_pressed"]
 [connection signal="item_selected" from="CanvasLayer/UI/OptionButton" to="." method="_on_OptionButton_item_selected"]
 [connection signal="pressed" from="CanvasLayer/Buttons/NewMapImageButton" to="." method="_on_NewMapImageButton_pressed"]
 [connection signal="pressed" from="CanvasLayer/Buttons/NewMapNoiseButton" to="." method="_on_NewMapNoiseButton_pressed"]
 [connection signal="pressed" from="CanvasLayer/Buttons/NewMapRandomButton" to="." method="_on_NewMapRandomButton_pressed"]
 [connection signal="pressed" from="CanvasLayer/Buttons/SaveAsImageButton" to="." method="_on_SaveAsImageButton_pressed"]
+[connection signal="pressed" from="CanvasLayer/PathfindingBox/StartButton" to="." method="_on_StartButton_pressed"]
+[connection signal="item_selected" from="CanvasLayer/PathfindingBox/Algorithms" to="." method="_on_Algorithms_item_selected"]
+[connection signal="pressed" from="CanvasLayer/PathfindingBox/SetStartButton" to="." method="_on_SetStartButton_pressed"]
+[connection signal="pressed" from="CanvasLayer/PathfindingBox/SetEndButton" to="." method="_on_SetEndButton_pressed"]
+[connection signal="pressed" from="CanvasLayer/PathfindingBox/SetGoalPointButton" to="." method="_on_SetGoalPointButton_pressed"]
