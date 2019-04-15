@@ -25,7 +25,7 @@ func _p_make_path(map : MapGD.Map, start_pos: Vector2, end_pos: Vector2) -> Arra
 		path.append(pos)
 	return path
 
-func calculatePath(map : MapGD.Map, start_pos: Vector2, end_pos: Vector2) -> Array:
+func calculatePath(map : MapGD.Map, start_pos: Vector2, end_pos: Vector2, goal_points: Array = []) -> Array:
 	assert(start_pos != end_pos)
 	assert(_p_is_valid(map, start_pos))
 	assert(_p_is_valid(map, end_pos))

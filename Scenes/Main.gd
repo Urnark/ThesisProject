@@ -176,12 +176,16 @@ func _on_SaveAsImageButton_pressed():
 
 # ------------------------------------ Choose Algorithm ---------------------------------------------
 var AStar_script = preload('../Scripts/Algorithms/MyAStar.gd')
+var AStarSearch_script = preload('../Scripts/Algorithms/AStarSearch.gd')
+var DynamicNearestNeighbour_script = preload('../Scripts/Algorithms/DNN.gd')
 
 var current_algorithm_script = AStar_script
 var selected_type_to_place = -1
 
 var start_pos := Vector2(0, 0)
-var end_pos := Vector2(0, 0)
+var end_pos := Vector2(1, 0)
+var goal_pints = []
+var path = []
 
 func _p_get_tile_pos_from_mouse() -> Vector2:
 	var mouse_pos = get_viewport().get_mouse_position()
@@ -197,11 +201,17 @@ func _p_set_empty_tile(tile_pos: Vector2):
 func _on_full_screen_button_pressed():
 	if Input.is_action_just_pressed("mouse_left"):
 		if selected_type_to_place == Global.TILES.start:
+			if _p_get_tile_pos_from_mouse() == end_pos:
+				return
 			_p_set_empty_tile(start_pos)
 			start_pos = _p_get_tile_pos_from_mouse()
 		if selected_type_to_place == Global.TILES.end:
+			if _p_get_tile_pos_from_mouse() == start_pos:
+				return
 			_p_set_empty_tile(end_pos)
 			end_pos = _p_get_tile_pos_from_mouse()
+		if selected_type_to_place == Global.TILES.goal_point:
+			goal_pints.append(_p_get_tile_pos_from_mouse())
 		var tile_pos = _p_get_tile_pos_from_mouse()
 		if tile_pos.x >= 0 and tile_pos.x < $MapHandler.map.width and tile_pos.y >= 0 and tile_pos.y < $MapHandler.map.height:
 			if selected_type_to_place != -1:
@@ -210,11 +220,15 @@ func _on_full_screen_button_pressed():
 	
 	if Input.is_action_just_pressed("mouse_right"):
 		var tile_pos = _p_get_tile_pos_from_mouse()
+		if $MapHandler.map.tilev(tile_pos).tile_index == Global.TILES.goal_point:
+			goal_pints.erase(tile_pos)
 		_p_set_empty_tile(tile_pos)
 
 func _on_StartButton_pressed():
 	var algorithm = current_algorithm_script.new()
-	var path = algorithm.calculatePath($MapHandler.map, start_pos, end_pos)
+	for pos in path:
+		$MapHandler.map.tilev(pos).tile_index = Global.TILES.cell
+	path = algorithm.calculatePath($MapHandler.map, start_pos, end_pos, goal_pints)
 	algorithm.free()
 	
 	for pos in path:
@@ -226,12 +240,12 @@ func _on_Algorithms_item_selected(ID):
 		# A*
 		0:
 			current_algorithm_script = AStar_script
-#		# AS
-#		1:
-#
-#		# DNN
-#		2:
-#
+		# AS
+		1:
+			current_algorithm_script = AStarSearch_script
+		# DNN
+		2:
+			current_algorithm_script = DynamicNearestNeighbour_script
 #		# GS
 #		3:
 #
