@@ -58,7 +58,7 @@ func calculatePath(map : MapGD.Map, start_pos: Vector2, end_pos: Vector2) -> Arr
 					cell.parent = tile
 					return _p_make_path(map, start_pos, end_pos)
 				elif cell.visited == false:
-					var g = tile.g + 1.0
+					var g = tile.g + (10.0 if (pos == [-1, -1] or pos == [-1, 1] or pos == [1, -1] or pos == [1, 1]) else 5.0)
 					var h = _p_calculate_h(p, end_pos)
 					var f = g + h
 					# Check if this path is better than the one already present
