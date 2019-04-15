@@ -101,6 +101,11 @@ func _p_generate_tile_map_with_noise(seed_nr: int, map: MapGD.Map, octaves: int 
 	
 	_p_generate_roads_from_groups(map, mg[0], mg[1])
 
+#func _p_center_point(arr: Array) -> Array:
+#	var point = arr[0]
+#	for point in arr:
+		
+
 func customComparison(a, b):
 	if a[0] == b[0]:
 		return a[1] < b[1]
