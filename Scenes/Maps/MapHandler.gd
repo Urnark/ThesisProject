@@ -101,6 +101,12 @@ func _p_generate_tile_map_with_noise(seed_nr: int, map: MapGD.Map, octaves: int 
 	
 	_p_generate_roads_from_groups(map, mg[0], mg[1])
 
+func customComparison(a, b):
+	if a[0] == b[0]:
+		return a[1] < b[1]
+	else:
+		return a[0] > b[0]
+
 func _p_generate_roads_from_groups(map: MapGD.Map, group_list: Array, groups: Array):
 	# Find biggest group as the main group
 	var main_group_index = 0
@@ -110,9 +116,16 @@ func _p_generate_roads_from_groups(map: MapGD.Map, group_list: Array, groups: Ar
 			main_group_index = index
 		index += 1
 	
+	# Sort the groups with the biggest first
+	var sorted_size = []
+	for group_index in groups.size():
+		sorted_size.append([groups[group_index].size(), group_index])
+	sorted_size.sort_custom(self, 'customComparison')
+	
 	# Make roads to the main group
 	var tile_index_for_cell = groups[0][0].tile_index
-	for group_index in groups.size():
+	for pair in sorted_size:
+		var group_index = pair[1]
 		if main_group_index != group_index:
 			var pos : Vector2 = groups[group_index][0].pos
 			var goal : Vector2 = groups[main_group_index][0].pos

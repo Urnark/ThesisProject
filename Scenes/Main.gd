@@ -12,12 +12,16 @@ var current_free_id = 0
 
 func _ready():
 	data = SaveLoad.load_maps()
-	for map in data['maps']:
-		$CanvasLayer/UI/OptionButton.add_item(map['name'], current_free_id)
-		current_free_id += 1
+	_p_createOptions()
 	
 	generate_map(data['maps'][0])
 	set_information(0)
+
+func _p_createOptions():
+	current_free_id = 0
+	for map in data['maps']:
+		$CanvasLayer/UI/OptionButton.add_item(map['name'], current_free_id)
+		current_free_id += 1
 
 func _exit_tree():
 	SaveLoad.save_maps(data)
@@ -144,8 +148,9 @@ func _on_Button_pressed():
 	if data['maps'].size() > 1:
 		var index = $CanvasLayer/UI/OptionButton.get_selected_id()
 		data['maps'].erase(data['maps'][index])
-		$CanvasLayer/UI/OptionButton.remove_item(index)
-		$CanvasLayer/UI/OptionButton.select((index - 1) if index - 1 >= 0 else 0)
+		for i in $CanvasLayer/UI/OptionButton.get_item_count():
+			$CanvasLayer/UI/OptionButton.remove_item(0)
+		_p_createOptions()
 
 func _on_SaveAsImageButton_pressed():
 	var map = data['maps'][$CanvasLayer/UI/OptionButton.get_selected_id()]
