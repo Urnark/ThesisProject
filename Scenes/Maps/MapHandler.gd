@@ -9,6 +9,10 @@ func _ready():
 	# Randomize the seed to creating random maps
 	randomize()
 
+func update_FullScreenButtonSize():
+	$FullScreenButton.rect_size = Vector2(map.width, map.height) * $TileMap.cell_size
+	$FullScreenButton.rect_global_position = Vector2(0, 0)
+
 func generate_new_map_from_image(image_of_map: Image):
 	# Clear the tile map
 	$TileMap.clear()
@@ -100,11 +104,6 @@ func _p_generate_tile_map_with_noise(seed_nr: int, map: MapGD.Map, octaves: int 
 #			tile.tile_index = Global.TILES.goal_point
 	
 	_p_generate_roads_from_groups(map, mg[0], mg[1])
-
-#func _p_center_point(arr: Array) -> Array:
-#	var point = arr[0]
-#	for point in arr:
-		
 
 func customComparison(a, b):
 	if a[0] == b[0]:

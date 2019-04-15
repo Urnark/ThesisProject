@@ -9,7 +9,7 @@ var popup = []
 var current_free_id = 0
 
 func _ready():
-	$MapHandler/Camera2D/FullScreenButton.connect('pressed', self, '_on_full_screen_button_pressed')
+	$MapHandler/FullScreenButton.connect('pressed', self, '_on_full_screen_button_pressed')
 	data = SaveLoad.load_maps()
 	_p_createOptions()
 	
@@ -23,7 +23,7 @@ func _p_createOptions():
 		current_free_id += 1
 
 func _exit_tree():
-	$MapHandler/Camera2D/FullScreenButton.disconnect('pressed', self, '_on_full_screen_button_pressed')
+	$MapHandler/FullScreenButton.disconnect('pressed', self, '_on_full_screen_button_pressed')
 	SaveLoad.save_maps(data)
 
 func _process(delta):
@@ -99,6 +99,8 @@ func generate_map(map_data):
 		
 		2:#MAP_TYPE.RANDOM_NR:
 			map_data['seed'] = $MapHandler.generate_new_map_with_random_numbers(map_data['width'], map_data['height'], map_data['seed'])
+	
+	$MapHandler.update_FullScreenButtonSize()
 
 func _on_NewMapImageButton_pressed():
 	var isit = true
