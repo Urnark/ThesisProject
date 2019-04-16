@@ -98,11 +98,6 @@ func _p_generate_tile_map_with_noise(seed_nr: int, map: MapGD.Map, octaves: int 
 	map.tiles = tiles
 	
 	var mg = _p_find_groups(map)
-#	var groups = mg[1]
-#	for group in groups:
-#		for tile in group:
-#			tile.tile_index = Global.TILES.goal_point
-	
 	_p_generate_roads_from_groups(map, mg[0], mg[1])
 
 func customComparison(a, b):
@@ -139,10 +134,10 @@ func _p_generate_roads_from_groups(map: MapGD.Map, group_list: Array, groups: Ar
 			
 			var l = pos.distance_squared_to(goal)
 			for i in l:
-				pos = pos.linear_interpolate(goal, i / l).round()
-				if group_list[pos.x + (pos.y * map.width)] != group_index and group_list[pos.x + (pos.y * map.width)] != -1:
-					break
-				elif group_list[pos.x + (pos.y * map.width)] == -1:
+				pos = pos.linear_interpolate(goal, i / l).floor()
+				#if group_list[pos.x + (pos.y * map.width)] != group_index and group_list[pos.x + (pos.y * map.width)] != -1:
+				#	break
+				if group_list[pos.x + (pos.y * map.width)] == -1:
 					group_list[pos.x + (pos.y * map.width)] = group_index
 					map.tiles[pos.x + (pos.y * map.width)].tile_index = tile_index_for_cell
 					groups[group_index].append(map.tiles[pos.x + (pos.y * map.width)])

@@ -25,6 +25,14 @@ class Map:
 	func _init(tile_map: TileMap):
 		self.tile_map = tile_map
 	
+	func copy():
+		var copy = Map.new(tile_map)
+		for tile in tiles:
+			copy.tiles.append(Tile.new(tile.tile_index, Vector2(tile.pos.x, tile.pos.y)))
+		copy.height = height
+		copy.width = width
+		return copy
+	
 	func tile(x: int, y: int) -> Tile:
 		return self.tiles[x + y * self.width]
 		

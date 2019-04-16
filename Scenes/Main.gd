@@ -8,6 +8,10 @@ var popup = []
 
 var current_free_id = 0
 
+var thread: Thread
+var mutex: Mutex
+var running = true
+
 func _ready():
 	$MapHandler/FullScreenButton.connect('pressed', self, '_on_full_screen_button_pressed')
 	data = SaveLoad.load_maps()
@@ -15,6 +19,10 @@ func _ready():
 	
 	generate_map(data['maps'][0])
 	set_information(0)
+	
+	thread = Thread.new()
+	mutex = Mutex.new()
+	thread.start(self, '_p_thread_func', null, Thread.PRIORITY_HIGH)
 
 func _p_createOptions():
 	current_free_id = 0
@@ -23,10 +31,21 @@ func _p_createOptions():
 		current_free_id += 1
 
 func _exit_tree():
+	running = false
+	thread.wait_to_finish()
 	$MapHandler/FullScreenButton.disconnect('pressed', self, '_on_full_screen_button_pressed')
 	SaveLoad.save_maps(data)
 
 func _process(delta):
+	# Update the tile map after a path has been found
+	if search_for_path == 2:
+		for pos in path:
+			$MapHandler.map.tiles[pos.x + pos.y * $MapHandler.map.width].tile_index = Global.TILES.red
+		$MapHandler.map.update_tile_map()
+		mutex.lock()
+		search_for_path = 0
+		mutex.unlock()
+	
 	var new = false
 	if not popup.empty():
 		if popup[0] == 'img':
@@ -101,6 +120,7 @@ func generate_map(map_data):
 			map_data['seed'] = $MapHandler.generate_new_map_with_random_numbers(map_data['width'], map_data['height'], map_data['seed'])
 	
 	$MapHandler.update_FullScreenButtonSize()
+	_p_clear_things_to_make_path()
 
 func _on_NewMapImageButton_pressed():
 	var isit = true
@@ -189,6 +209,27 @@ var end_pos := Vector2(1, 0)
 var goal_pints = []
 var path = []
 
+var search_for_path: int = 0
+
+func _p_thread_func(data):
+	while running:
+		mutex.lock()
+		if search_for_path == 1:
+			print('searching')
+			var algorithm = current_algorithm_script.new()
+			path = algorithm.calculatePath($MapHandler.map, start_pos, end_pos, goal_pints, $CanvasLayer/ProgressBar)
+			algorithm.free()
+			print('done')
+			search_for_path = 2
+		mutex.unlock()
+
+func _p_clear_things_to_make_path():
+	goal_pints = []
+	path = []
+	start_pos = Vector2(0, 0)
+	end_pos = Vector2(1, 0)
+	selected_type_to_place = -1
+
 func _p_get_tile_pos_from_mouse() -> Vector2:
 	var mouse_pos = get_viewport().get_mouse_position()
 	var world_pos = (mouse_pos - get_viewport_rect().size/2) * $MapHandler.zoom + $MapHandler/Camera2D.position
@@ -201,41 +242,47 @@ func _p_set_empty_tile(tile_pos: Vector2):
 			$MapHandler.map.update_tile_map()
 
 func _on_full_screen_button_pressed():
-	if Input.is_action_just_pressed("mouse_left"):
-		if selected_type_to_place == Global.TILES.start:
-			if _p_get_tile_pos_from_mouse() == end_pos:
+	if search_for_path == 0:
+		if Input.is_action_just_pressed("mouse_left"):
+			if $MapHandler.map.tilev(_p_get_tile_pos_from_mouse()).tile_index == Global.TILES.wall:
 				return
-			_p_set_empty_tile(start_pos)
-			start_pos = _p_get_tile_pos_from_mouse()
-		if selected_type_to_place == Global.TILES.end:
-			if _p_get_tile_pos_from_mouse() == start_pos:
+			if selected_type_to_place == Global.TILES.start:
+				if _p_get_tile_pos_from_mouse() == end_pos:
+					return
+				_p_set_empty_tile(start_pos)
+				start_pos = _p_get_tile_pos_from_mouse()
+			if selected_type_to_place == Global.TILES.end:
+				if _p_get_tile_pos_from_mouse() == start_pos:
+					return
+				_p_set_empty_tile(end_pos)
+				end_pos = _p_get_tile_pos_from_mouse()
+			if selected_type_to_place == Global.TILES.goal_point:
+				goal_pints.append(_p_get_tile_pos_from_mouse())
+			var tile_pos = _p_get_tile_pos_from_mouse()
+			if tile_pos.x >= 0 and tile_pos.x < $MapHandler.map.width and tile_pos.y >= 0 and tile_pos.y < $MapHandler.map.height:
+				if selected_type_to_place != -1:
+					$MapHandler.map.tiles[tile_pos.x + (tile_pos.y * $MapHandler.map.width)].tile_index = selected_type_to_place
+					$MapHandler.map.update_tile_map()
+		
+		if Input.is_action_just_pressed("mouse_right"):
+			if $MapHandler.map.tilev(_p_get_tile_pos_from_mouse()).tile_index == Global.TILES.wall:
 				return
-			_p_set_empty_tile(end_pos)
-			end_pos = _p_get_tile_pos_from_mouse()
-		if selected_type_to_place == Global.TILES.goal_point:
-			goal_pints.append(_p_get_tile_pos_from_mouse())
-		var tile_pos = _p_get_tile_pos_from_mouse()
-		if tile_pos.x >= 0 and tile_pos.x < $MapHandler.map.width and tile_pos.y >= 0 and tile_pos.y < $MapHandler.map.height:
-			if selected_type_to_place != -1:
-				$MapHandler.map.tiles[tile_pos.x + (tile_pos.y * $MapHandler.map.width)].tile_index = selected_type_to_place
-				$MapHandler.map.update_tile_map()
-	
-	if Input.is_action_just_pressed("mouse_right"):
-		var tile_pos = _p_get_tile_pos_from_mouse()
-		if $MapHandler.map.tilev(tile_pos).tile_index == Global.TILES.goal_point:
-			goal_pints.erase(tile_pos)
-		_p_set_empty_tile(tile_pos)
+			var tile_pos = _p_get_tile_pos_from_mouse()
+			if $MapHandler.map.tilev(tile_pos).tile_index == Global.TILES.goal_point:
+				goal_pints.erase(tile_pos)
+			_p_set_empty_tile(tile_pos)
 
 func _on_StartButton_pressed():
-	var algorithm = current_algorithm_script.new()
 	for pos in path:
 		$MapHandler.map.tilev(pos).tile_index = Global.TILES.cell
-	path = algorithm.calculatePath($MapHandler.map, start_pos, end_pos, goal_pints)
-	algorithm.free()
-	
-	for pos in path:
-		$MapHandler.map.tiles[pos.x + pos.y * $MapHandler.map.width].tile_index = Global.TILES.red
+	$MapHandler.map.tilev(start_pos).tile_index = Global.TILES.start
+	$MapHandler.map.tilev(end_pos).tile_index = Global.TILES.end
+	for pos in goal_pints:
+		$MapHandler.map.tilev(pos).tile_index = Global.TILES.goal_point
 	$MapHandler.map.update_tile_map()
+	mutex.lock()
+	search_for_path = 1
+	mutex.unlock()
 
 func _on_Algorithms_item_selected(ID):
 	match ID:

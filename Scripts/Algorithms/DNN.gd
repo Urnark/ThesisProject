@@ -15,7 +15,18 @@ func _p_nn(all: Array, pos: Vector2) -> Array:
 			g = goal
 	return g
 
-func calculatePath(map: a_star.MapGD.Map, start_pos: Vector2, end_pos: Vector2, _goal_points: Array) -> Array:
+func _p_set_value(progress_bar: ProgressBar, value: float):
+	if progress_bar != null:
+		progress_bar.value = value
+
+func calculatePath(map: a_star.MapGD.Map, start_pos: Vector2, end_pos: Vector2, _goal_points: Array, progress_bar: ProgressBar = null) -> Array:
+	if progress_bar != null:
+		progress_bar.value = 0.0
+		progress_bar.visible = true
+	
+	var bar_step = 100.0 / (_goal_points.size() + 1) as float
+	var current_bar_step = 0
+	
 	# Make a copy of the array of goal points so they are not removed
 	var goal_points = []
 	for goal in _goal_points:
@@ -54,11 +65,17 @@ func calculatePath(map: a_star.MapGD.Map, start_pos: Vector2, end_pos: Vector2, 
 		current_pos = path_to_goal[0]
 		# Remove the goal from the list of goals
 		goal_points.erase(path_to_goal[0])
+		current_bar_step += bar_step
+		_p_set_value(progress_bar, current_bar_step)
 	
 	# Add the path that leads to the end position to the final path
 	var path_to_goal = aStar.calculatePath(map, current_pos, end_pos)
 	for i in path_to_goal.size():
 		path.append(path_to_goal[(path_to_goal.size() - 1) - i])
 	
+	_p_set_value(progress_bar, progress_bar.max_value)
+	
 	aStar.free()
+	if progress_bar != null:
+		progress_bar.visible = false
 	return path
