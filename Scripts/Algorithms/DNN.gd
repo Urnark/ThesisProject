@@ -48,9 +48,10 @@ func calculatePath(map: a_star.MapGD.Map, start_pos: Vector2, end_pos: Vector2, 
 		var path_to_goal = aStar.calculatePath(map, current_pos, goal)
 		
 		# See if a goal that is closer exists and if so use it instead
-		for i in path_to_goal.size() - 1:
+		var step = 10
+		for i in (path_to_goal.size() - 1) / step:
 			# Find a new goal that is closer to the position in the current path to the goal
-			var temp_goal = _p_nn(goal_points, path_to_goal[(path_to_goal.size() - 2) - i])
+			var temp_goal = _p_nn(goal_points, path_to_goal[(path_to_goal.size() - 2) - (i * step)])
 			if temp_goal != goal:
 				# If the path to the new goal from the current position is shorter use it instead
 				var temp_path_to_goal = aStar.calculatePath(map, current_pos, temp_goal)
