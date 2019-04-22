@@ -15,10 +15,14 @@ class pathItem:
 class nodeItem:
 	var node
 	var nrOfConnections
+	var connectedNode1
+	var connectedNode2
 	
 	func _init(p_node):
 		node = p_node
 		nrOfConnections = 0
+		connectedNode1 = null
+		connectedNode2 = null
 	
 
 func _p_set_value(progress_bar: ProgressBar, value: float):
@@ -58,10 +62,11 @@ func calculatePath(map: a_star.MapGD.Map, start_pos: Vector2, end_pos: Vector2, 
 	endNodeShortestPath = aStar.calculatePath(map, end_pos, goal_points[0].node)
 	var endNodePrevNode = goal_points[0]
 	for goal in goal_points:
-		var tempEndPath = aStar.calculatePath(map, end_pos, goal.node)
-		if(tempEndPath.size() < endNodeShortestPath.size()):
-			endNodeShortestPath = tempEndPath
-			endNodePrevNode = goal	
+		if (goal != startNodeNextNode):
+			var tempEndPath = aStar.calculatePath(map, end_pos, goal.node)
+			if(tempEndPath.size() < endNodeShortestPath.size()):
+				endNodeShortestPath = tempEndPath
+				endNodePrevNode = goal	
 	endNodePrevNode.nrOfConnections += 1
 	
 	print("Connected endnode to closest goal node")
@@ -91,7 +96,20 @@ func calculatePath(map: a_star.MapGD.Map, start_pos: Vector2, end_pos: Vector2, 
 		var selectedPath = pathList[0]
 		for item in pathList:
 			if item.node1.nrOfConnections < 2 && item.node2.nrOfConnections < 2 && item.length < selectedPath.length:
-				selectedPath = item
+				var node = item.node2
+				var prevNode
+				var alreadyConnected = false
+				while (node != null):
+					if (node == item.node1):
+						alreadyConnected = true
+						break
+					prevNode = node
+					if (node.connectedNode1 != prevNode):
+						node = node.connectedNode1
+					else:
+						node = node.connectedNode2
+				if !alreadyConnected:
+					selectedPath = item
 		selectedPath.node1.nrOfConnections += 1
 		selectedPath.node2.nrOfConnections += 1
 		tempPaths.append(selectedPath)
@@ -102,8 +120,9 @@ func calculatePath(map: a_star.MapGD.Map, start_pos: Vector2, end_pos: Vector2, 
 	var sortedNodes = []
 	var currentNode = startNodeNextNode
 	var found = false
+	sortedNodes.append(startNodeNextNode)
 	
-	while currentNode != endNodePrevNode:
+	while tempPaths.size() > 0:
 		for item in tempPaths:
 			found = false
 			if currentNode == item.node1:
@@ -111,30 +130,41 @@ func calculatePath(map: a_star.MapGD.Map, start_pos: Vector2, end_pos: Vector2, 
 				currentNode = item.node2
 				tempPaths.erase(item)
 				found = true
+				tempPaths.erase(item)
 			elif currentNode == item.node2:
 				sortedNodes.append(item.node1)
 				currentNode = item.node1
 				tempPaths.erase(item)
 				found = true
+				tempPaths.erase(item)
 			if found:
 				break
 	
 	print("Connected all the nodes via shortest paths")
 	
 	var path = []
-	path.append(start_pos)
+#	path.append(start_pos)
 	
-	var p = aStar.calculatePath(map, start_pos, startNodeNextNode)
+	var p = aStar.calculatePath(map, start_pos, startNodeNextNode.node)
 	
-	for i in p.size() - 1:
+	for i in p.size() - 2:
 		path.append(p[p.size() - 2 - i])
 	
 	
 	#append the goal node connections
-	for node in sortedNodes:
-		path.append(node)
+	for i in sortedNodes.size() - 1:
+		var p2 = aStar.calculatePath(map, sortedNodes[i].node, sortedNodes[i + 1].node)
+		print(i)
+		for j in p2.size() - 1:
+			path.append(p2[p2.size() - 2 - j])
+
+	var p3 = aStar.calculatePath(map, sortedNodes[sortedNodes.size() - 1].node, end_pos)
+	
+	for i in p3.size() - 2:
+		path.append(p3[p3.size() - 2 - i])
+
 		
-	path.append(end_pos)
+#	path.append(end_pos)
 	
 	_p_set_value(progress_bar, progress_bar.max_value)
 	
