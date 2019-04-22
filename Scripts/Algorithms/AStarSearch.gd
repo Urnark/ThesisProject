@@ -22,7 +22,7 @@ func calculatePath(map: a_star.MapGD.Map, start_pos: Vector2, end_pos: Vector2, 
 	var aStar = a_star.new()
 	
 	var path = []
-	path.append(start_pos)
+	#path.append(start_pos)
 	
 	var current_pos := start_pos
 	# Loop through all goals
@@ -46,7 +46,7 @@ func calculatePath(map: a_star.MapGD.Map, start_pos: Vector2, end_pos: Vector2, 
 	
 	# Add the path that leads to the end position to the final path
 	var path_to_goal = aStar.calculatePath(map, current_pos, end_pos)
-	for i in path_to_goal.size():
+	for i in path_to_goal.size() - 1:
 		path.append(path_to_goal[(path_to_goal.size() - 1) - i])
 	
 	_p_set_value(progress_bar, progress_bar.max_value)

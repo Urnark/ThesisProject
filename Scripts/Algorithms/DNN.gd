@@ -35,7 +35,7 @@ func calculatePath(map: a_star.MapGD.Map, start_pos: Vector2, end_pos: Vector2, 
 	var aStar = a_star.new()
 	
 	var path = []
-	path.append(start_pos)
+	#path.append(start_pos)
 	
 	var current_pos := start_pos
 	# Loop through all goals
@@ -48,9 +48,10 @@ func calculatePath(map: a_star.MapGD.Map, start_pos: Vector2, end_pos: Vector2, 
 		var path_to_goal = aStar.calculatePath(map, current_pos, goal)
 		
 		# See if a goal that is closer exists and if so use it instead
-		for i in path_to_goal.size() - 1:
+		var step = 10
+		for i in (path_to_goal.size() - 1) / step:
 			# Find a new goal that is closer to the position in the current path to the goal
-			var temp_goal = _p_nn(goal_points, path_to_goal[(path_to_goal.size() - 2) - i])
+			var temp_goal = _p_nn(goal_points, path_to_goal[(path_to_goal.size() - 2) - (i * step)])
 			if temp_goal != goal:
 				# If the path to the new goal from the current position is shorter use it instead
 				var temp_path_to_goal = aStar.calculatePath(map, current_pos, temp_goal)
@@ -70,7 +71,7 @@ func calculatePath(map: a_star.MapGD.Map, start_pos: Vector2, end_pos: Vector2, 
 	
 	# Add the path that leads to the end position to the final path
 	var path_to_goal = aStar.calculatePath(map, current_pos, end_pos)
-	for i in path_to_goal.size():
+	for i in path_to_goal.size() - 1:
 		path.append(path_to_goal[(path_to_goal.size() - 1) - i])
 	
 	_p_set_value(progress_bar, progress_bar.max_value)
