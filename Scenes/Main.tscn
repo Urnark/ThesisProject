@@ -1,8 +1,7 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://Scenes/Main.gd" type="Script" id=1]
 [ext_resource path="res://Scenes/Maps/MapHandler.tscn" type="PackedScene" id=2]
-[ext_resource path="res://Scenes/Testing.gdns" type="Script" id=3]
 
 [node name="Main" type="Node2D"]
 script = ExtResource( 1 )
@@ -146,9 +145,6 @@ anchor_bottom = 1.0
 margin_left = -105.0
 margin_top = -20.0
 margin_right = 105.0
-
-[node name="Node2D" type="Node2D" parent="."]
-script = ExtResource( 3 )
 
 [connection signal="pressed" from="CanvasLayer/Button" to="." method="_on_Button_pressed"]
 [connection signal="item_selected" from="CanvasLayer/UI/OptionButton" to="." method="_on_OptionButton_item_selected"]
