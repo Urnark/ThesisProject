@@ -234,10 +234,12 @@ func _p_thread_func(data):
 		mutex.lock()
 		if search_for_path == 1:
 			print('searching')
+			var old_time = OS.get_ticks_msec()
 			#var algorithm = current_algorithm_script.new()
 			path = testing.calculatePath(current_algorithm_id, start_pos, end_pos, goal_pints)
 			#path = algorithm.calculatePath($MapHandler.map, start_pos, end_pos, goal_pints, $CanvasLayer/ProgressBar)
 			#algorithm.free()
+			print((OS.get_ticks_msec() - old_time) / 1000.0)
 			print('done')
 			search_for_path = 2
 		mutex.unlock()
