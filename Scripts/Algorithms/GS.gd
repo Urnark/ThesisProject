@@ -13,6 +13,11 @@ class pathItem:
 		node1 = p_node1
 		node2 = p_node2
 		path = p_path
+		
+	func pathSort(a, b):
+		if a.length < b.length:
+			return true
+		return false
 
 class nodeItem:
 	var node
@@ -96,18 +101,20 @@ func calculatePath(map: a_star.MapGD.Map, start_pos: Vector2, end_pos: Vector2, 
 				exists = false
 	
 	#sort allPaths
-	for i in range(allPaths.size() - 1):
-		for j in range(allPaths.size() - 2):
-			if(allPaths[j].length > allPaths[j + 1].length):
-				var temp = allPaths[j + 1]
-				allPaths[j + 1] = allPaths[j]
-				allPaths[j] = temp
+	allPaths.sort_custom(self, "pathSort")
+#	for i in range(allPaths.size() - 1):
+#		for j in range(allPaths.size() - 2):
+#			if(allPaths[j].length > allPaths[j + 1].length):
+#				var temp = allPaths[j + 1]
+#				allPaths[j + 1] = allPaths[j]
+#				allPaths[j] = temp
 	
 	#Connect start node to closest node
 	var startNodeShortestPath
 	startNodeShortestPath = aStar.calculatePath(map, startNode.node, goal_points[0].node)
 	var startNodeNextNode = goal_points[0]
-	for item in goal_points:
+	for i in range(goal_points.size() - 2):
+		var item = goal_points[i + 1]
 		var tempStartPath = aStar.calculatePath(map, startNode.node, item.node)
 		if(tempStartPath.size() < startNodeShortestPath.size()):
 			startNodeShortestPath = tempStartPath
@@ -121,11 +128,13 @@ func calculatePath(map: a_star.MapGD.Map, start_pos: Vector2, end_pos: Vector2, 
 	var endNodeShortestPath
 	endNodeShortestPath = aStar.calculatePath(map, endNode.node, goal_points[0].node)
 	var endNodeNextNode = goal_points[0]
-	for item in goal_points:
-		var tempEndPath = aStar.calculatePath(map, endNode.node, item.node)
-		if(tempEndPath.size() < endNodeShortestPath.size()):
-			endNodeShortestPath = tempEndPath
-			endNodeNextNode = item
+	for i in range(goal_points.size() - 2):
+		var item = goal_points[i + 1]
+		if item != startNodeNextNode:
+			var tempEndPath = aStar.calculatePath(map, endNode.node, item.node)
+			if(tempEndPath.size() < endNodeShortestPath.size()):
+				endNodeShortestPath = tempEndPath
+				endNodeNextNode = item
 	endNodeNextNode.nrOfConnections += 1
 	endNode.nrOfConnections += 1
 	endNodeNextNode.connectedNode1 = endNode
@@ -136,14 +145,14 @@ func calculatePath(map: a_star.MapGD.Map, start_pos: Vector2, end_pos: Vector2, 
 	var selectedPaths = []
 	var flag = false
 	var found = false
-	while(pathLength(startNode) < (goal_points.size() + 1)):
+	while(pathLength(startNode) < (goal_points.size() + 2)):
 		for path in allPaths:
 			found = false
 			if(path.node1.nrOfConnections < 2 && path.node2.nrOfConnections < 2):
 				if(isConnectedToNode(path.node1, startNode) || isConnectedToNode(path.node2, startNode)):
 					if(isConnectedToNode(path.node1, endNode) || isConnectedToNode(path.node2, endNode)):
 						flag = true
-						if((pathLength(path.node1) + pathLength(path.node2)) >= goal_points.size() + 1):
+						if((pathLength(path.node1) + pathLength(path.node2)) >= goal_points.size() + 2):
 							selectedPaths.append(path)
 							allPaths.erase(path)
 							found = true
@@ -177,17 +186,41 @@ func calculatePath(map: a_star.MapGD.Map, start_pos: Vector2, end_pos: Vector2, 
 			if(found):
 				break
 	
+	var sortedPaths = []
+	var arrayLength = selectedPaths.size()
+	var currentNode = startNodeNextNode
+	
+	while(sortedPaths.size() < arrayLength):
+		for item in selectedPaths:
+			if(item.node1 == currentNode):
+				sortedPaths.append(item)
+				currentNode = item.node2
+				selectedPaths.erase(item)
+			elif(item.node2 == currentNode):
+				sortedPaths.append(item)
+				currentNode = item.node1
+				selectedPaths.erase(item)
+	
+	
 	var path = []
 	
-	for i in startNodeShortestPath.size() - 1:
-		path.append(startNodeShortestPath[startNodeShortestPath.size() - 1 - i])
+	for i in startNodeShortestPath.size() - 2:
+		path.append(startNodeShortestPath[startNodeShortestPath.size() - 2 - i])
 	
-	for item in selectedPaths:
-		for i in item.path.size() - 1:
-			path.append(item.path[item.path.size() - 1 - i])
+	var lastNode = startNodeShortestPath[0]
 	
+	for item in sortedPaths:
+		if(item.path[0] == lastNode):
+			for i in item.path.size() - 1:
+				path.append(item.path[i])
+				lastNode = item.path.back()
+		else:
+			for i in item.path.size() - 1:
+				path.append(item.path[item.path.size() - 1 - i])
+				lastNode = item.path[0]
 	
 	for i in endNodeShortestPath.size() - 1:
-		path.append(endNodeShortestPath[endNodeShortestPath.size() - 1 - i])
+		path.append(endNodeShortestPath[i])
 	
+	print(path)
 	return path
