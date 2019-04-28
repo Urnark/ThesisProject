@@ -217,6 +217,8 @@ func _on_SaveAsImageButton_pressed():
 var AStar_script = preload('../Scripts/Algorithms/MyAStar.gd')
 var AStarSearch_script = preload('../Scripts/Algorithms/AStarSearch.gd')
 var DynamicNearestNeighbour_script = preload('../Scripts/Algorithms/DNN.gd')
+var GreedySearch_script = preload('../Scripts/Algorithms/GS.gd')
+var NearestNeighbor_script = preload('../Scripts/Algorithms/NearestNeighbor.gd')
 
 var current_algorithm_script = AStar_script
 var current_algorithm_id = 0
@@ -317,12 +319,13 @@ func _on_Algorithms_item_selected(ID):
 		# DNN
 		2:
 			current_algorithm_script = DynamicNearestNeighbour_script
-#		# GS
-#		3:
-#
-#		# NN
-#		4:
-#
+		# GS
+		3:
+			current_algorithm_script = GreedySearch_script
+		# NN
+		4:
+			current_algorithm_script = NearestNeighbor_script
+
 
 func _on_SetStartButton_pressed():
 	selected_type_to_place = Global.TILES.start
