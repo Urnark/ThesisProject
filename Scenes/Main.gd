@@ -200,7 +200,7 @@ func _on_SaveAsImageButton_pressed():
 var AStar_script = preload('../Scripts/Algorithms/MyAStar.gd')
 var AStarSearch_script = preload('../Scripts/Algorithms/AStarSearch.gd')
 var DynamicNearestNeighbour_script = preload('../Scripts/Algorithms/DNN.gd')
-var GreedySearch_script = preload('../Scripts/Algorithms/GreedySearch.gd')
+var GreedySearch_script = preload('../Scripts/Algorithms/GS.gd')
 var NearestNeighbor_script = preload('../Scripts/Algorithms/NearestNeighbor.gd')
 
 var current_algorithm_script = AStar_script

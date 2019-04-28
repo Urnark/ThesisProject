@@ -28,6 +28,21 @@ class nodeItem:
 func _p_set_value(progress_bar: ProgressBar, value: float):
 	if progress_bar != null:
 		progress_bar.value = value
+		
+func getPathLength(start: nodeItem) -> int:
+	var length = 0
+	var currentNode = start
+	var prevNode
+	while (currentNode != null):
+		length += 1
+		if (currentNode.connectedNode1 != prevNode):
+			prevNode = currentNode
+			currentNode = currentNode.connectedNode1
+		else:
+			prevNode = currentNode
+			currentNode = currentNode.connectedNode2
+		
+	return length
 
 func calculatePath(map: a_star.MapGD.Map, start_pos: Vector2, end_pos: Vector2, _goal_points: Array, progress_bar: ProgressBar = null) -> Array:
 	if progress_bar != null:
@@ -91,7 +106,36 @@ func calculatePath(map: a_star.MapGD.Map, start_pos: Vector2, end_pos: Vector2, 
 	
 	print("Filled pathList with all possible node connections")
 	
-	#Pick the shortest path and add it to tempPaths
+	#Pick the shortest paths so that every node has one connection (Round 1)
+	for i in range(goal_points.size() - 1):
+		var selectedPath = pathList[0]
+		for item in pathList:
+			if item.node1.nrOfConnections < 1 && item.node2.nrOfConnections < 1 && item.length < selectedPath.length:	
+				selectedPath = item
+		selectedPath.node1.nrOfConnections += 1
+		selectedPath.node1.connectedNode1 = selectedPath.node2
+		selectedPath.node2.nrOfConnections += 1
+		selectedPath.node2.connectedNode1 = selectedPath.node1
+		tempPaths.append(selectedPath)
+		pathList.erase(selectedPath)
+		
+	#Check if any nodes are missing a connection
+	for i in range(goal_points.size() - 1):
+		if(goal_points[i].nrOfConnections < 1):
+			var extraPath = pathList[0]
+			for item in pathList:
+				if item.node1 == goal_points[i] || item.node2 == goal_points[i]:
+					if item.length < extraPath.length:
+						extraPath = item
+			extraPath.node1.nrOfConnections += 1
+			extraPath.node1.connectedNode1 = extraPath.node2
+			extraPath.node2.nrOfConnections += 1
+			extraPath.node2.connectedNode1 = extraPath.node1
+			tempPaths.append(extraPath)
+			pathList.erase(extraPath)
+			break
+	
+	#Pick shortest paths so that every node has two connections (Round 2)
 	for i in range(goal_points.size() - 1):
 		var selectedPath = pathList[0]
 		for item in pathList:
@@ -103,15 +147,18 @@ func calculatePath(map: a_star.MapGD.Map, start_pos: Vector2, end_pos: Vector2, 
 					if (node == item.node1):
 						alreadyConnected = true
 						break
-					prevNode = node
 					if (node.connectedNode1 != prevNode):
+						prevNode = node
 						node = node.connectedNode1
 					else:
+						prevNode = node
 						node = node.connectedNode2
 				if !alreadyConnected:
 					selectedPath = item
 		selectedPath.node1.nrOfConnections += 1
+		selectedPath.node1.connectedNode2 = selectedPath.node2
 		selectedPath.node2.nrOfConnections += 1
+		selectedPath.node2.connectedNode2 = selectedPath.node1
 		tempPaths.append(selectedPath)
 	
 	print("Picked the shortest paths and added them to tempPaths")
@@ -130,13 +177,11 @@ func calculatePath(map: a_star.MapGD.Map, start_pos: Vector2, end_pos: Vector2, 
 				currentNode = item.node2
 				tempPaths.erase(item)
 				found = true
-				tempPaths.erase(item)
 			elif currentNode == item.node2:
 				sortedNodes.append(item.node1)
 				currentNode = item.node1
 				tempPaths.erase(item)
 				found = true
-				tempPaths.erase(item)
 			if found:
 				break
 	
