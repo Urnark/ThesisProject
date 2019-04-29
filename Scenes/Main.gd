@@ -12,6 +12,8 @@ var thread: Thread
 var mutex: Mutex
 var running = true
 
+onready var testing = preload("res://Scripts/Testing.gdns").new()
+
 func _ready():
 	$MapHandler/FullScreenButton.connect('pressed', self, '_on_full_screen_button_pressed')
 	data = SaveLoad.load_maps()
@@ -23,6 +25,14 @@ func _ready():
 	thread = Thread.new()
 	mutex = Mutex.new()
 	thread.start(self, '_p_thread_func', null, Thread.PRIORITY_HIGH)
+	
+	#print(testing.map($MapHandler.map))
+	#var tile = testing.create_tile()
+	#print(tile)
+	#print(tile.str2())
+	#var tile = testing.get_tile()
+	#print(tile.str2())
+	#testing.delete_tile()
 
 func _p_createOptions():
 	current_free_id = 0
@@ -93,6 +103,9 @@ func _process(delta):
 		current_free_id += 1
 		popup[1].free()
 		popup = []
+	
+	$CanvasLayer/ProgressBar.visible = testing.getProgressBarVisible()
+	$CanvasLayer/ProgressBar.value = testing.getProgressBarValue() * $CanvasLayer/ProgressBar.max_value
 
 func set_information(id: int):
 	var text = ''
@@ -121,6 +134,10 @@ func generate_map(map_data):
 	
 	$MapHandler.update_FullScreenButtonSize()
 	_p_clear_things_to_make_path()
+	
+	# Create the map on the c++ side
+	testing.cleanup()
+	testing.init($MapHandler.map.width, $MapHandler.map.height, $MapHandler.map.get_pool_int_array())
 
 func _on_NewMapImageButton_pressed():
 	var isit = true
@@ -204,6 +221,7 @@ var GreedySearch_script = preload('../Scripts/Algorithms/GS.gd')
 var NearestNeighbor_script = preload('../Scripts/Algorithms/NearestNeighbor.gd')
 
 var current_algorithm_script = AStar_script
+var current_algorithm_id = 0
 var selected_type_to_place = -1
 
 var start_pos := Vector2(0, 0)
@@ -218,9 +236,14 @@ func _p_thread_func(data):
 		mutex.lock()
 		if search_for_path == 1:
 			print('searching')
-			var algorithm = current_algorithm_script.new()
-			path = algorithm.calculatePath($MapHandler.map, start_pos, end_pos, goal_pints, $CanvasLayer/ProgressBar)
-			algorithm.free()
+			var old_time = OS.get_ticks_msec()
+			#var algorithm = current_algorithm_script.new()
+			path = testing.calculatePath(current_algorithm_id, start_pos, end_pos, goal_pints)
+			#path = algorithm.calculatePath($MapHandler.map, start_pos, end_pos, goal_pints, $CanvasLayer/ProgressBar)
+			#algorithm.free()
+			var dt_time = (OS.get_ticks_msec() - old_time) / 1000.0
+			print(dt_time)
+			SaveLoad.add_data_to_save(current_algorithm_id, dt_time, path.size())
 			print('done')
 			search_for_path = 2
 		mutex.unlock()
@@ -287,6 +310,7 @@ func _on_StartButton_pressed():
 	mutex.unlock()
 
 func _on_Algorithms_item_selected(ID):
+	current_algorithm_id = ID
 	match ID:
 		# A*
 		0:
@@ -313,3 +337,6 @@ func _on_SetEndButton_pressed():
 
 func _on_SetGoalPointButton_pressed():
 	selected_type_to_place = Global.TILES.goal_point
+
+func _on_CreateDataFileButton_pressed():
+	SaveLoad.save_tl_all($CanvasLayer/PathfindingBox/Algorithms)

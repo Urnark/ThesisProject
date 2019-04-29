@@ -73,3 +73,11 @@ class Map:
 		image.load(path)
 		
 		self.use_image_for_map(image)
+	
+	func get_pool_int_array() -> PoolIntArray:
+		var arr : PoolIntArray
+		for y in self.height:
+			for x in self.width:
+				arr.append(tile(x, y).tile_index)
+		
+		return arr

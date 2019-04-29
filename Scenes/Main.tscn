@@ -26,10 +26,18 @@ margin_right = 70.0
 margin_bottom = 24.0
 
 [node name="OptionButton" type="OptionButton" parent="CanvasLayer/UI"]
-margin_right = 70.0
+margin_right = 113.0
 margin_bottom = 20.0
 focus_mode = 0
 enabled_focus_mode = 0
+
+[node name="CreateDataFileButton" type="Button" parent="CanvasLayer/UI"]
+margin_top = 24.0
+margin_right = 113.0
+margin_bottom = 44.0
+focus_mode = 0
+enabled_focus_mode = 0
+text = "Create Data File"
 
 [node name="Buttons" type="VBoxContainer" parent="CanvasLayer"]
 anchor_left = 1.0
@@ -148,6 +156,7 @@ margin_right = 105.0
 
 [connection signal="pressed" from="CanvasLayer/Button" to="." method="_on_Button_pressed"]
 [connection signal="item_selected" from="CanvasLayer/UI/OptionButton" to="." method="_on_OptionButton_item_selected"]
+[connection signal="pressed" from="CanvasLayer/UI/CreateDataFileButton" to="." method="_on_CreateDataFileButton_pressed"]
 [connection signal="pressed" from="CanvasLayer/Buttons/NewMapImageButton" to="." method="_on_NewMapImageButton_pressed"]
 [connection signal="pressed" from="CanvasLayer/Buttons/NewMapNoiseButton" to="." method="_on_NewMapNoiseButton_pressed"]
 [connection signal="pressed" from="CanvasLayer/Buttons/NewMapRandomButton" to="." method="_on_NewMapRandomButton_pressed"]
