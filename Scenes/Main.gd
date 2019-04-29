@@ -230,6 +230,77 @@ var goal_pints = []
 var path = []
 
 var search_for_path: int = 0
+var save_whole_map: bool = false
+
+# Check if the position is a valid one
+func _p_is_valid(pos: Vector2) -> bool:
+	if pos.x >= 0 and pos.x < $MapHandler.map.width and pos.y >= 0 and pos.y < $MapHandler.map.height:
+		 return $MapHandler.map.tilev(pos).tile_index != Global.TILES.wall
+	return false
+
+# Get a random valid position on the current map
+func _p_rand_valid_pos_on_map() -> Vector2:
+	var pos: Vector2 = Vector2(randi() % $MapHandler.map.width, randi() % $MapHandler.map.height)
+	if not _p_is_valid(pos):
+		pos = _p_rand_valid_pos_on_map()
+	return pos
+
+# Check if a vector2 is in a PoolVector2Array
+func _p_in_pool_vector2_array(var pool_vector2_array: PoolVector2Array, var vector2: Vector2) -> bool:
+	for v in pool_vector2_array:
+		if v == vector2:
+			return true
+	return false
+
+# Get two different random valid positions on the current map
+func _p_two_rand_valid_pos_on_map() -> PoolVector2Array:
+	var ret : PoolVector2Array
+	ret.append(_p_rand_valid_pos_on_map())
+	
+	var pos: Vector2 = _p_rand_valid_pos_on_map()
+	while _p_in_pool_vector2_array(ret, pos):
+		pos = _p_rand_valid_pos_on_map()
+	
+	ret.append(pos)
+	return ret
+
+# Get N random valid positions on the current map. With the condition that all positions is different
+func _p_n_rand_valid_pos_on_map(var points: PoolVector2Array, var nr_of_points: int) -> PoolVector2Array:
+	var new_points: PoolVector2Array
+	for i in range(nr_of_points):
+		var v : Vector2 = _p_rand_valid_pos_on_map()
+		while _p_in_pool_vector2_array(points, v):
+			v = _p_rand_valid_pos_on_map()
+		points.append(v)
+		new_points.append(v)
+		
+	return new_points
+
+# Create the data for one map
+func _p_thread_create_data_tl(var map_id: int, var iterations: int, var nr_of_goal_points: int):
+	print("starting simulation to create data")
+	
+	var apmap = []
+	for i in range(iterations):
+		var two_pos = _p_two_rand_valid_pos_on_map()
+		var points = _p_n_rand_valid_pos_on_map(two_pos, nr_of_goal_points)
+		apmap.append([two_pos[0], two_pos[1], points])
+	
+	for algorithm_id in range(1, 5):
+		print(algorithm_id)
+		for i in range(iterations):
+			# Start timer
+			var old_time = OS.get_ticks_msec()
+			var p = testing.calculatePath(algorithm_id, apmap[i][0], apmap[i][1], apmap[i][2])
+			# Stop timer
+			var dt_time = (OS.get_ticks_msec() - old_time) / 1000.0
+			# Add time taken and path length to data to be saved
+			SaveLoad.add_data_to_save(algorithm_id, dt_time, p.size())
+	
+	# Save data
+	SaveLoad.save_tl_all(data['maps'][map_id]['name'], $CanvasLayer/PathfindingBox/Algorithms)
+	
+	print("Done with creating data from whole map")
 
 func _p_thread_func(data):
 	while running:
@@ -243,9 +314,12 @@ func _p_thread_func(data):
 			#algorithm.free()
 			var dt_time = (OS.get_ticks_msec() - old_time) / 1000.0
 			print(dt_time)
-			SaveLoad.add_data_to_save(current_algorithm_id, dt_time, path.size())
+#			SaveLoad.add_data_to_save(current_algorithm_id, dt_time, path.size())
 			print('done')
 			search_for_path = 2
+		if save_whole_map:
+			_p_thread_create_data_tl($CanvasLayer/UI/OptionButton.get_selected_id(), 2, 3)
+			save_whole_map = false
 		mutex.unlock()
 
 func _p_clear_things_to_make_path():
@@ -339,4 +413,15 @@ func _on_SetGoalPointButton_pressed():
 	selected_type_to_place = Global.TILES.goal_point
 
 func _on_CreateDataFileButton_pressed():
-	SaveLoad.save_tl_all($CanvasLayer/PathfindingBox/Algorithms)
+	var temp = true
+	for i in range(SaveLoad.data_tl.size()):
+		if not SaveLoad.data_tl[i].empty():
+			temp = false
+	if temp:
+		# Generate map that the data is comming from
+		print("map is generating")
+		generate_map(data['maps'][$CanvasLayer/UI/OptionButton.get_selected_id()])
+		print("map has been generated")
+		save_whole_map = temp
+	else:
+		SaveLoad.save_tl_all('current_map', $CanvasLayer/PathfindingBox/Algorithms)

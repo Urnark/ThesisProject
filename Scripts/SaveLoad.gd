@@ -54,12 +54,11 @@ func save_tl(var type_id: int, var type_name: String):
 	data_tl[type_id].clear()
 	file.close()
 	
-func save_tl_all(var algorithms: OptionButton):
+func save_tl_all(var name_of_map: String, var algorithms: OptionButton):
 	for i in range(data_tl.size()):
 		if not data_tl[i].empty():
 			var text : String = algorithms.get_item_text(i)
 			if i == 0 or i == 1:
 				text = text.replace('*', 'Star')
-			print(text)
-			save_tl(i, text)
+			save_tl(i, 'map[' + name_of_map + ']_' + text)
 	
