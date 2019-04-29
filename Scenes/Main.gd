@@ -314,10 +314,12 @@ func _p_thread_func(data):
 			#algorithm.free()
 			var dt_time = (OS.get_ticks_msec() - old_time) / 1000.0
 			print(dt_time)
-#			SaveLoad.add_data_to_save(current_algorithm_id, dt_time, path.size())
+			SaveLoad.add_data_to_save(current_algorithm_id, dt_time, path.size())
 			print('done')
 			search_for_path = 2
 		if save_whole_map:
+			for i in range(SaveLoad.data_tl.size()):
+				SaveLoad.data_tl[i].clear()
 			_p_thread_create_data_tl($CanvasLayer/UI/OptionButton.get_selected_id(), 2, 3)
 			save_whole_map = false
 		mutex.unlock()
