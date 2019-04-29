@@ -241,7 +241,9 @@ func _p_thread_func(data):
 			path = testing.calculatePath(current_algorithm_id, start_pos, end_pos, goal_pints)
 			#path = algorithm.calculatePath($MapHandler.map, start_pos, end_pos, goal_pints, $CanvasLayer/ProgressBar)
 			#algorithm.free()
-			print((OS.get_ticks_msec() - old_time) / 1000.0)
+			var dt_time = (OS.get_ticks_msec() - old_time) / 1000.0
+			print(dt_time)
+			SaveLoad.add_data_to_save(current_algorithm_id, dt_time, path.size())
 			print('done')
 			search_for_path = 2
 		mutex.unlock()
@@ -335,3 +337,6 @@ func _on_SetEndButton_pressed():
 
 func _on_SetGoalPointButton_pressed():
 	selected_type_to_place = Global.TILES.goal_point
+
+func _on_CreateDataFileButton_pressed():
+	SaveLoad.save_tl_all($CanvasLayer/PathfindingBox/Algorithms)
