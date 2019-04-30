@@ -320,7 +320,7 @@ func _p_thread_func(data):
 		if save_whole_map:
 			for i in range(SaveLoad.data_tl.size()):
 				SaveLoad.data_tl[i].clear()
-			_p_thread_create_data_tl($CanvasLayer/UI/OptionButton.get_selected_id(), 2, 3)
+			_p_thread_create_data_tl($CanvasLayer/UI/OptionButton.get_selected_id(), 2, 10)
 			save_whole_map = false
 		mutex.unlock()
 
