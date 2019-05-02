@@ -94,7 +94,8 @@ func _process(delta):
 					"name": "[random]" + popup[1].name_of_map,
 					"seed": popup[1].seed_nr,
 					"type": 2,
-					"width": popup[1].width
+					"width": popup[1].width,
+					"spread": popup[1].spread
 				})
 				new = true
 	
@@ -130,7 +131,7 @@ func generate_map(map_data):
 			map_data['octaves'], map_data['period'], map_data['persistence'])
 		
 		2:#MAP_TYPE.RANDOM_NR:
-			map_data['seed'] = $MapHandler.generate_new_map_with_random_numbers(map_data['width'], map_data['height'], map_data['seed'])
+			map_data['seed'] = $MapHandler.generate_new_map_with_random_numbers(map_data['width'], map_data['height'], map_data['spread'], map_data['seed'])
 	
 	$MapHandler.update_FullScreenButtonSize()
 	_p_clear_things_to_make_path()

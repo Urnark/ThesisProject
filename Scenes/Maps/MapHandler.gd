@@ -44,7 +44,7 @@ octaves: int = 1, period: float = 20, persistence: float = 1) -> int:
 	
 	return _seed
 
-func generate_new_map_with_random_numbers(width: int, height: int, var seed_nr = -1) -> int:
+func generate_new_map_with_random_numbers(width: int, height: int, var spread: float, var seed_nr = -1) -> int:
 	# Clear the tile map
 	$TileMap.clear()
 	
@@ -60,7 +60,12 @@ func generate_new_map_with_random_numbers(width: int, height: int, var seed_nr =
 	map = MapGD.Map.new($TileMap)
 	map.width = width
 	map.height = height
-	_p_generate_tile_map_with_ranom_numbers(map)
+	_p_generate_tile_map_with_ranom_numbers(map, spread)
+	
+	if spread > 0.6:
+		var mg = _p_find_groups(map)
+		_p_generate_roads_from_groups(map, mg[0], mg[1])
+	
 	map.update_tile_map()
 	
 	return _seed
@@ -214,16 +219,17 @@ func _p_find_groups(map: MapGD.Map) -> Array:
 	return [group_list, groups]
 
 # Generating tiles to the choosen map with only random numbers
-func _p_generate_tile_map_with_ranom_numbers(var map: MapGD.Map):
+func _p_generate_tile_map_with_ranom_numbers(var map: MapGD.Map, var spread: float):
 	var tiles = []
 	for y in map.height:
 		for x in map.width:
-			tiles.append(MapGD.Tile.new(_p_get_tile_index(), Vector2(x, y)))
+			tiles.append(MapGD.Tile.new(_p_get_tile_index(map, spread), Vector2(x, y)))
 	map.tiles = tiles
 
-func _p_get_tile_index() -> int:
+func _p_get_tile_index(var map: MapGD.Map, var spread: float) -> int:
 	#return randi() % TILES.size()
-	return Global.TILES.wall if randi() % 2 == 0 else Global.TILES.cell
+	var rand = randi() % 100
+	return Global.TILES.wall if rand > 100 * spread else Global.TILES.cell
 
 func _input(event):
 	# Wheel Up Event

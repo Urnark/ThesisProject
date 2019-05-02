@@ -5,6 +5,7 @@ var seed_nr := -1
 var width := 0
 var height := 0
 var has_changed := false
+var spread := 0.0
 
 func _on_LineEdit_text_changed(new_text):
 	name_of_map = new_text
@@ -20,3 +21,6 @@ func _on_SeedNr_text_changed(new_text):
 
 func _on_Button_pressed():
 	has_changed = true
+
+func _on_Spread_value_changed(value):
+	spread = value
