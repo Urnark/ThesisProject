@@ -288,8 +288,9 @@ func _p_thread_create_data_tl(var map_id: int, var iterations: int, var nr_of_go
 		apmap.append([two_pos[0], two_pos[1], points])
 	
 	for algorithm_id in range(1, 5):
-		print(algorithm_id)
+		print("Algorithm: ", $CanvasLayer/PathfindingBox/Algorithms.get_item_text(algorithm_id))
 		for i in range(iterations):
+			print("Iteration: ", i)
 			# Start timer
 			var old_time = OS.get_ticks_msec()
 			var p = testing.calculatePath(algorithm_id, apmap[i][0], apmap[i][1], apmap[i][2])
