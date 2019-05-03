@@ -286,7 +286,7 @@ func _p_thread_create_data_tl(var map_id: int, var iterations: int, var nr_of_go
 		var two_pos = _p_two_rand_valid_pos_on_map()
 		var points = _p_n_rand_valid_pos_on_map(two_pos, nr_of_goal_points)
 		apmap.append([two_pos[0], two_pos[1], points])
-	
+	var time = OS.get_ticks_msec()
 	for algorithm_id in range(1, 5):
 		print("Algorithm: ", $CanvasLayer/PathfindingBox/Algorithms.get_item_text(algorithm_id))
 		for i in range(iterations):
@@ -298,7 +298,7 @@ func _p_thread_create_data_tl(var map_id: int, var iterations: int, var nr_of_go
 			var dt_time = (OS.get_ticks_msec() - old_time) / 1000.0
 			# Add time taken and path length to data to be saved
 			SaveLoad.add_data_to_save(algorithm_id, dt_time, p.size())
-	
+	print("Time taken to calculate: ", (OS.get_ticks_msec() - time) / 1000.0, " seconds")
 	# Save data
 	SaveLoad.save_tl_all(data['maps'][map_id]['name'], $CanvasLayer/PathfindingBox/Algorithms)
 	
